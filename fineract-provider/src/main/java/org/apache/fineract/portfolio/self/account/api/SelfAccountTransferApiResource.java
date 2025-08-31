@@ -40,6 +40,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.core.api.ApiRequestParameterHelper;
@@ -62,6 +63,7 @@ import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Path("/v1/self/accounttransfers")
 @Component
 @Tag(name = "Self Account transfer", description = "")
@@ -79,6 +81,7 @@ public class SelfAccountTransferApiResource {
     private final ConfigurationDomainService configurationDomainService;
     private final AccountTransfersReadPlatformService accountTransfersReadPlatformService;
 
+    
     @GET
     @Path("template")
     @Consumes({ MediaType.APPLICATION_JSON })
@@ -95,6 +98,9 @@ public class SelfAccountTransferApiResource {
         Collection<SelfAccountTemplateData> selfTemplateData = this.selfAccountTransferReadService.retrieveSelfAccountTemplateData(user);
 
         if (type.equals("tpt")) {
+            log.warn("*********");
+            log.warn("IS TPT");
+            log.warn("*********");
             Collection<SelfAccountTemplateData> tptTemplateData = this.tptBeneficiaryReadPlatformService
                     .retrieveTPTSelfAccountTemplateData(user);
             return this.toApiJsonSerializer.serialize(settings, new SelfAccountTransferData(selfTemplateData, tptTemplateData));
