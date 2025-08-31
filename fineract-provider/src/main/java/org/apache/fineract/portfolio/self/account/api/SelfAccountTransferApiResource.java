@@ -119,6 +119,9 @@ public class SelfAccountTransferApiResource {
     public CommandProcessingResult create(@DefaultValue("") @QueryParam("type") @Parameter(name = "type") final String type,
             AccountTransferRequest accountTransferRequest) {
         final String apiRequestBodyAsJson = toApiJsonSerializer.serialize(accountTransferRequest);
+        log.warn("*********");
+        log.warn("TYPE "+type);
+        log.warn("*********");
         Map<String, Object> params = this.dataValidator.validateCreate(type, apiRequestBodyAsJson);
         if (type.equals("tpt")) {
             log.warn("*********");

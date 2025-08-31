@@ -150,10 +150,12 @@ public class SelfAccountTransferDataValidator {
             final DataValidatorBuilder baseDataValidator, final String type) {
         AppUser user = this.context.authenticatedUser();
         Collection<SelfAccountTemplateData> validFromAccounts = this.selfAccountTransferReadService.retrieveSelfAccountTemplateData(user);
+        log.warn("*****************");
         log.warn("TYPE "+type);
+        log.warn("*****************");
         Collection<SelfAccountTemplateData> validToAccounts = validFromAccounts;
         if (type.equals("tpt")) {
-             log.info("is TPT ");
+             log.info("ES TPT ");
             validToAccounts = this.tptBeneficiaryReadPlatformService.retrieveTPTSelfAccountTemplateData(user);
         }
 
@@ -168,9 +170,10 @@ public class SelfAccountTransferDataValidator {
         }
 
         boolean validToAccount = false;
+        log.info("******************************************************");
         for (SelfAccountTemplateData validAccount : validToAccounts) {
             log.info("validAccount "+validAccount.getAccountId());
-            log.info("fromAccount "+toAccount.getAccountId());
+            log.info("toAccount "+toAccount.getAccountId());
             if (validAccount.equals(toAccount)) {
                 validToAccount = true;
                 break;
