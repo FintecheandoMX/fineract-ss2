@@ -77,6 +77,10 @@ public class SelfAccountTransferDataValidator {
             throw new InvalidJsonException();
         }
 
+        loger.warn("************");
+        loger.warn("apiRequestBodyAsJson "+apiRequestBodyAsJson);
+        loger.warn("************");
+
         JsonElement element = this.fromApiJsonHelper.parse(apiRequestBodyAsJson);
 
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
@@ -146,7 +150,7 @@ public class SelfAccountTransferDataValidator {
             final DataValidatorBuilder baseDataValidator, final String type) {
         AppUser user = this.context.authenticatedUser();
         Collection<SelfAccountTemplateData> validFromAccounts = this.selfAccountTransferReadService.retrieveSelfAccountTemplateData(user);
-
+        log.warn("TYPE "+type);
         Collection<SelfAccountTemplateData> validToAccounts = validFromAccounts;
         if (type.equals("tpt")) {
              log.info("is TPT ");
@@ -155,6 +159,8 @@ public class SelfAccountTransferDataValidator {
 
         boolean validFromAccount = false;
         for (SelfAccountTemplateData validAccount : validFromAccounts) {
+            log.info("validAccount "+validAccount);
+            log.info("fromAccount "+fromAccount);
             if (validAccount.equals(fromAccount)) {
                 validFromAccount = true;
                 break;
@@ -163,6 +169,8 @@ public class SelfAccountTransferDataValidator {
 
         boolean validToAccount = false;
         for (SelfAccountTemplateData validAccount : validToAccounts) {
+            log.info("validAccount "+validAccount);
+            log.info("fromAccount "+toAccount);
             if (validAccount.equals(toAccount)) {
                 validToAccount = true;
                 break;

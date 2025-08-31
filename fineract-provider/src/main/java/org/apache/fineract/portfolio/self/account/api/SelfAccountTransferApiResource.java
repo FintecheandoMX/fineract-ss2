@@ -121,6 +121,9 @@ public class SelfAccountTransferApiResource {
         final String apiRequestBodyAsJson = toApiJsonSerializer.serialize(accountTransferRequest);
         Map<String, Object> params = this.dataValidator.validateCreate(type, apiRequestBodyAsJson);
         if (type.equals("tpt")) {
+            log.warn("*********");
+            log.warn("IS TPT");
+            log.warn("*********");
             checkForLimits(params);
         }
         return this.accountTransfersApiResource.create(accountTransferRequest);
