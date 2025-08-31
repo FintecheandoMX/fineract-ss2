@@ -159,8 +159,8 @@ public class SelfAccountTransferDataValidator {
 
         boolean validFromAccount = false;
         for (SelfAccountTemplateData validAccount : validFromAccounts) {
-            log.info("validAccount "+validAccount);
-            log.info("fromAccount "+fromAccount);
+            log.info("validAccount "+validAccount.getAccountId());
+            log.info("fromAccount "+fromAccount.getAccountId());
             if (validAccount.equals(fromAccount)) {
                 validFromAccount = true;
                 break;
@@ -169,13 +169,14 @@ public class SelfAccountTransferDataValidator {
 
         boolean validToAccount = false;
         for (SelfAccountTemplateData validAccount : validToAccounts) {
-            log.info("validAccount "+validAccount);
-            log.info("fromAccount "+toAccount);
+            log.info("validAccount "+validAccount.getAccountId());
+            log.info("fromAccount "+toAccount.getAccountId());
             if (validAccount.equals(toAccount)) {
                 validToAccount = true;
                 break;
             }
         }
+        log.info("validToAccount "+validToAccount);
 
         if (!validFromAccount) {
             baseDataValidator.reset().failWithCode("invalid.from.account.details",
