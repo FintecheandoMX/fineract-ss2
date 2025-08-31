@@ -21,6 +21,7 @@ package org.apache.fineract.portfolio.self.account.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.portfolio.account.PortfolioAccountType;
@@ -31,6 +32,7 @@ import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
+@Slf4j
 public class SelfBeneficiariesTPTReadPlatformServiceImpl implements SelfBeneficiariesTPTReadPlatformService {
 
     private final PlatformSecurityContext context;
@@ -92,6 +94,10 @@ public class SelfBeneficiariesTPTReadPlatformServiceImpl implements SelfBenefici
             sqlBuilder.append(" and b.account_type = 1 ");
             sqlBuilder.append(" and b.app_user_id = ?) ");
 
+            log.warn("***************************");
+            log.warn("SQL 1 "+sqlBuilder.toString());
+            log.warn("***************************");
+
             this.schemaSql = sqlBuilder.toString();
         }
 
@@ -149,6 +155,10 @@ public class SelfBeneficiariesTPTReadPlatformServiceImpl implements SelfBenefici
             sqlBuilder.append(" where b.is_active = true ");
             sqlBuilder.append(" and b.account_type = 1 ");
             sqlBuilder.append(" and b.app_user_id = ?) ");
+
+            log.warn("***************************");
+            log.warn("SQL 2 "+sqlBuilder.toString());
+            log.warn("***************************");
 
             this.schemaSql = sqlBuilder.toString();
         }
