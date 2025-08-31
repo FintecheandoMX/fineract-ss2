@@ -77,9 +77,9 @@ public class SelfAccountTransferDataValidator {
             throw new InvalidJsonException();
         }
 
-        loger.warn("************");
-        loger.warn("apiRequestBodyAsJson "+apiRequestBodyAsJson);
-        loger.warn("************");
+        logger.warn("************");
+        logger.warn("apiRequestBodyAsJson "+apiRequestBodyAsJson);
+        logger.warn("************");
 
         JsonElement element = this.fromApiJsonHelper.parse(apiRequestBodyAsJson);
 
