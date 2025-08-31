@@ -168,6 +168,7 @@ public class SelfAccountTransferDataValidator {
                 break;
             }
         }
+        log.info("validFromAccount "+validFromAccount);
 
         boolean validToAccount = false;
         log.info("******************************************************");
