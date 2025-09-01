@@ -111,6 +111,10 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
         String firstName = this.fromApiJsonHelper.extractStringNamed(SelfServiceApiConstants.firstNameParamName, element);
         baseDataValidator.reset().parameter(SelfServiceApiConstants.firstNameParamName).value(firstName).notBlank()
                 .notExceedingLengthOf(100);
+        
+        String middleName = this.fromApiJsonHelper.extractStringNamed(SelfServiceApiConstants.middleNameParamName, element);
+        baseDataValidator.reset().parameter(SelfServiceApiConstants.middleNameParamName).value(middleName).notBlank()
+                .notExceedingLengthOf(100);
 
         String lastName = this.fromApiJsonHelper.extractStringNamed(SelfServiceApiConstants.lastNameParamName, element);
         baseDataValidator.reset().parameter(SelfServiceApiConstants.lastNameParamName).value(lastName).notBlank().notExceedingLengthOf(100);
@@ -143,11 +147,11 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
         }
         validateForDuplicateUsername(username);
 
-        throwExceptionIfValidationError(dataValidationErrors, accountNumber, firstName, lastName, mobileNumber, isEmailAuthenticationMode);
+        throwExceptionIfValidationError(dataValidationErrors, accountNumber, firstName, middleName, lastName, mobileNumber, isEmailAuthenticationMode);
 
         String authenticationToken = randomAuthorizationTokenGeneration();
         Client client = this.clientRepository.getClientByAccountNumber(accountNumber);
-        SelfServiceRegistration selfServiceRegistration = SelfServiceRegistration.instance(client, accountNumber, firstName, lastName,
+        SelfServiceRegistration selfServiceRegistration = SelfServiceRegistration.instance(client, accountNumber, firstName, middleName, lastName,
                 mobileNumber, email, authenticationToken, username, password);
         this.selfServiceRegistrationRepository.saveAndFlush(selfServiceRegistration);
         sendAuthorizationToken(selfServiceRegistration, isEmailAuthenticationMode);
@@ -206,11 +210,11 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
     }
 
     private void throwExceptionIfValidationError(final List<ApiParameterError> dataValidationErrors, String accountNumber, String firstName,
-            String lastName, String mobileNumber, boolean isEmailAuthenticationMode) {
+            String middleName, String lastName, String mobileNumber, boolean isEmailAuthenticationMode) {
         if (!dataValidationErrors.isEmpty()) {
             throw new PlatformApiDataValidationException(dataValidationErrors);
         }
-        boolean isClientExist = this.selfServiceRegistrationReadPlatformService.isClientExist(accountNumber, firstName, lastName,
+        boolean isClientExist = this.selfServiceRegistrationReadPlatformService.isClientExist(accountNumber, firstName, middleName, lastName,
                 mobileNumber, isEmailAuthenticationMode);
         if (!isClientExist) {
             throw new ClientNotFoundException();

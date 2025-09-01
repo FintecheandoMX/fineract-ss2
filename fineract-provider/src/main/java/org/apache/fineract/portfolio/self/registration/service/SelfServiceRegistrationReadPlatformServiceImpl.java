@@ -27,7 +27,7 @@ public class SelfServiceRegistrationReadPlatformServiceImpl implements SelfServi
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public boolean isClientExist(String accountNumber, String firstName, String lastName, String mobileNumber,
+    public boolean isClientExist(String accountNumber, String firstName, String middleName, String lastName, String mobileNumber,
             boolean isEmailAuthenticationMode) {
         String sql = "select count(*) from m_client where account_no = ? and firstname = ? and lastname = ?";
         Object[] params = new Object[] { accountNumber, firstName, lastName };
@@ -35,8 +35,23 @@ public class SelfServiceRegistrationReadPlatformServiceImpl implements SelfServi
             sql = sql + " and mobile_no = ?";
             params = new Object[] { accountNumber, firstName, lastName, mobileNumber };
         }
+        
+        if (!isNullOrEmpty(middleName)) {
+            sql = sql + " and middlename = ?";
+            params = new Object[] { accountNumber, firstName, lastName, middleName };
+        }
+        
+        if (!isNullOrEmpty(middleName) && !isEmailAuthenticationMode) {
+            sql = sql + " and middlename = ? and mobile_no = ?";
+            params = new Object[] { accountNumber, firstName, lastName, middleName, mobileNumber };
+        }
+        
         int count = this.jdbcTemplate.queryForObject(sql, Integer.class, params);
         return count != 0;
+    }
+    
+    public static boolean isNullOrEmpty(String str) {
+        return str == null || str.isEmpty();
     }
 
 }

@@ -152,7 +152,7 @@ public class SelfAccountTransferDataValidator {
         Collection<SelfAccountTemplateData> validFromAccounts = this.selfAccountTransferReadService.retrieveSelfAccountTemplateData(user);
         log.warn("*****************");
         log.warn("TYPE "+type);
-        log.warn("*****************");
+        log.warn("*****************");        
         Collection<SelfAccountTemplateData> validToAccounts = validFromAccounts;
         if (type.equals("tpt")) {
              log.info("ES TPT ");
