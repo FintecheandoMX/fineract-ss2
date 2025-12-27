@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
@@ -52,6 +53,7 @@ import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class SelfAccountTransferDataValidator {
 
@@ -74,6 +76,10 @@ public class SelfAccountTransferDataValidator {
         if (StringUtils.isBlank(apiRequestBodyAsJson)) {
             throw new InvalidJsonException();
         }
+
+        log.warn("************");
+        log.warn("apiRequestBodyAsJson "+apiRequestBodyAsJson);
+        log.warn("************");
 
         JsonElement element = this.fromApiJsonHelper.parse(apiRequestBodyAsJson);
 
@@ -144,27 +150,37 @@ public class SelfAccountTransferDataValidator {
             final DataValidatorBuilder baseDataValidator, final String type) {
         AppUser user = this.context.authenticatedUser();
         Collection<SelfAccountTemplateData> validFromAccounts = this.selfAccountTransferReadService.retrieveSelfAccountTemplateData(user);
-
+        log.warn("*****************");
+        log.warn("TYPE "+type);
+        log.warn("*****************");        
         Collection<SelfAccountTemplateData> validToAccounts = validFromAccounts;
         if (type.equals("tpt")) {
+             log.info("ES TPT ");
             validToAccounts = this.tptBeneficiaryReadPlatformService.retrieveTPTSelfAccountTemplateData(user);
         }
 
         boolean validFromAccount = false;
         for (SelfAccountTemplateData validAccount : validFromAccounts) {
+            log.info("validAccount "+validAccount.getAccountId());
+            log.info("fromAccount "+fromAccount.getAccountId());
             if (validAccount.equals(fromAccount)) {
                 validFromAccount = true;
                 break;
             }
         }
+        log.info("validFromAccount "+validFromAccount);
 
         boolean validToAccount = false;
+        log.info("******************************************************");
         for (SelfAccountTemplateData validAccount : validToAccounts) {
+            log.info("validAccount "+validAccount.getAccountId());
+            log.info("toAccount "+toAccount.getAccountId());
             if (validAccount.equals(toAccount)) {
                 validToAccount = true;
                 break;
             }
         }
+        log.info("validToAccount "+validToAccount);
 
         if (!validFromAccount) {
             baseDataValidator.reset().failWithCode("invalid.from.account.details",

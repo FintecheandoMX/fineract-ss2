@@ -16,10 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.self.registration.service;
+package org.apache.fineract.useradministration.exception;
 
-public interface SelfServiceRegistrationReadPlatformService {
+import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
 
-    boolean isClientExist(String accountNumber, String firstName, String middleName, String lastName, String mobileNumber, boolean isEmailAuthenticationMode);
+/**
+ * A {@link RuntimeException} thrown when user resources are not found.
+ */
+@SuppressWarnings("serial")
+public class ClientAppUserAlreadyLinkedException extends PlatformApiDataValidationException {
 
+    public ClientAppUserAlreadyLinkedException(final String accountNo) {
+        super("error.msg.user.client.is.already.linked", "The client trying to register is already linked", null);
+    }
 }

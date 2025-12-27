@@ -21,12 +21,14 @@ package org.apache.fineract.portfolio.self.account.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.portfolio.self.account.data.SelfAccountTemplateData;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
+@Slf4j
 @RequiredArgsConstructor
 public class SelfAccountTransferReadServiceImpl implements SelfAccountTransferReadService {
 
@@ -47,6 +49,9 @@ public class SelfAccountTransferReadServiceImpl implements SelfAccountTransferRe
                 .append("from m_appuser as u ").append("inner join m_selfservice_user_client_mapping as map on u.id = map.appuser_id ")
                 .append("inner join m_client as c on map.client_id = c.id ").append("inner join m_office as o on c.office_id = o.id ")
                 .append("inner join m_loan as l on l.client_id = c.id ").append("where u.id = ? ").append("and l.loan_status_id = 300 ");
+        log.warn("*********");
+        log.warn("sql.toString() "+sql.toString());
+        log.warn("*********");        
         return this.jdbcTemplate.query(sql.toString(), mapper, new Object[] { user.getId(), user.getId() });
     }
 

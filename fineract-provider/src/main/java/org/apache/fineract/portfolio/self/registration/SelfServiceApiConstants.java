@@ -33,6 +33,7 @@ public final class SelfServiceApiConstants {
     public static final String accountNumberParamName = "accountNumber";
     public static final String passwordParamName = "password";
     public static final String firstNameParamName = "firstName";
+    public static final String middleNameParamName = "middleName";
     public static final String mobileNumberParamName = "mobileNumber";
     public static final String lastNameParamName = "lastName";
     public static final String emailParamName = "email";
@@ -45,7 +46,7 @@ public final class SelfServiceApiConstants {
     public static final String createRequestSuccessMessage = "Self service request created.";
     public static final Set<String> REGISTRATION_REQUEST_DATA_PARAMETERS = Collections
             .unmodifiableSet(new HashSet<>(Arrays.asList(usernameParamName, accountNumberParamName, passwordParamName, firstNameParamName,
-                    mobileNumberParamName, lastNameParamName, emailParamName, authenticationModeParamName)));
+                    mobileNumberParamName, lastNameParamName, emailParamName, authenticationModeParamName,middleNameParamName)));
     public static final Set<String> CREATE_USER_REQUEST_DATA_PARAMETERS = Collections
             .unmodifiableSet(new HashSet<>(Arrays.asList(requestIdParamName, authenticationTokenParamName)));
     public static final List<Object> SUPPORTED_AUTHENTICATION_MODE_PARAMETERS = List
