@@ -63,11 +63,11 @@ import org.apache.fineract.portfolio.loanaccount.repository.LoanBuyDownFeeBalanc
 import org.apache.fineract.portfolio.loanaccount.repository.LoanCapitalizedIncomeBalanceRepository;
 import org.apache.fineract.portfolio.loanaccount.serialization.LoanChargeValidator;
 import org.apache.fineract.portfolio.loanaccount.serialization.LoanTransactionValidator;
-import org.apache.fineract.portfolio.loanaccount.service.BuyDownFeePlatformService;
 import org.apache.fineract.portfolio.loanaccount.service.LoanAccrualsProcessingService;
 import org.apache.fineract.portfolio.loanaccount.service.LoanBalanceService;
 import org.apache.fineract.portfolio.loanaccount.service.LoanDownPaymentHandlerService;
 import org.apache.fineract.portfolio.loanaccount.service.LoanJournalEntryPoster;
+import org.apache.fineract.portfolio.loanaccount.service.LoanScheduleService;
 import org.apache.fineract.portfolio.loanaccount.service.LoanUtilService;
 import org.apache.fineract.portfolio.loanaccount.service.ReprocessLoanTransactionsService;
 import org.apache.fineract.portfolio.note.domain.Note;
@@ -100,8 +100,8 @@ public class LoanAdjustmentServiceImpl implements LoanAdjustmentService {
     private final LoanBalanceService loanBalanceService;
     private final ReprocessLoanTransactionsService reprocessLoanTransactionsService;
     private final LoanCapitalizedIncomeBalanceRepository loanCapitalizedIncomeBalanceRepository;
-    private final BuyDownFeePlatformService buyDownFeePlatformService;
     private final LoanBuyDownFeeBalanceRepository loanBuyDownFeeBalanceRepository;
+    private final LoanScheduleService loanScheduleService;
 
     @Override
     public CommandProcessingResult adjustLoanTransaction(Loan loan, LoanTransaction transactionToAdjust, LoanAdjustmentParameter parameter,
@@ -147,12 +147,13 @@ public class LoanAdjustmentServiceImpl implements LoanAdjustmentService {
             }
 
             LoanCapitalizedIncomeBalance capitalizedIncomeBalance = loanCapitalizedIncomeBalanceRepository
-                    .findByLoanIdAndLoanTransactionId(loan.getId(), transactionToAdjust.getId());
+                    .findByLoanIdAndLoanTransactionIdAndDeletedFalseAndClosedFalse(loan.getId(), transactionToAdjust.getId());
             if (MathUtil.isGreaterThanZero(capitalizedIncomeBalance.getAmountAdjustment())) {
                 throw new InvalidLoanTransactionTypeException("transaction", "capitalizedIncome.cannot.be.reversed.when.adjusted",
                         "Capitalized income transaction cannot be reversed when non-reversed adjustment exists for it.");
             }
-            loanCapitalizedIncomeBalanceRepository.delete(capitalizedIncomeBalance);
+            capitalizedIncomeBalance.setDeleted(true);
+            loanCapitalizedIncomeBalanceRepository.saveAndFlush(capitalizedIncomeBalance);
         }
         if (transactionToAdjust.isCapitalizedIncomeAdjustment()) {
             if (newTransactionDetail.isNotZero()) {
@@ -174,14 +175,15 @@ public class LoanAdjustmentServiceImpl implements LoanAdjustmentService {
                         "Buy down fee transaction cannot be adjusted");
             }
 
-            LoanBuyDownFeeBalance buyDownFeeBalance = loanBuyDownFeeBalanceRepository.findByLoanIdAndLoanTransactionId(loan.getId(),
-                    transactionToAdjust.getId());
+            LoanBuyDownFeeBalance buyDownFeeBalance = loanBuyDownFeeBalanceRepository
+                    .findByLoanIdAndLoanTransactionIdAndDeletedFalseAndClosedFalse(loan.getId(), transactionToAdjust.getId());
 
             if (MathUtil.isGreaterThanZero(buyDownFeeBalance.getAmountAdjustment())) {
                 throw new InvalidLoanTransactionTypeException("transaction", "buy.down.fee.cannot.be.reversed.when.adjusted",
                         "Buy down fee transaction cannot be reversed when non-reversed adjustment exists for it.");
             }
-            loanBuyDownFeeBalanceRepository.delete(buyDownFeeBalance);
+            buyDownFeeBalance.setDeleted(true);
+            loanBuyDownFeeBalanceRepository.saveAndFlush(buyDownFeeBalance);
         }
         if (transactionToAdjust.isBuyDownFeeAdjustment()) {
             if (newTransactionDetail.isNotZero()) {
@@ -346,7 +348,7 @@ public class LoanAdjustmentServiceImpl implements LoanAdjustmentService {
         }
 
         if (transactionForAdjustment.getTypeOf().equals(LoanTransactionType.CAPITALIZED_INCOME)) {
-            reprocessLoanTransactionsService.reprocessTransactions(loan);
+            loanScheduleService.regenerateScheduleWithReprocessingTransactions(loan);
         }
     }
 

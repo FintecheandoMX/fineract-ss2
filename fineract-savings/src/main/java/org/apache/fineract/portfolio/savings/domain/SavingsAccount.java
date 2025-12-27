@@ -135,7 +135,7 @@ import org.springframework.util.CollectionUtils;
 @DiscriminatorColumn(name = "deposit_type_enum", discriminatorType = DiscriminatorType.INTEGER)
 @DiscriminatorValue("100")
 @SuppressWarnings({ "MemberName" })
-public class SavingsAccount extends AbstractAuditableWithUTCDateTimeCustom<Long> {
+public class SavingsAccount extends AbstractAuditableWithUTCDateTimeCustom<Long> implements IDepositAccountType {
 
     private static final Logger LOG = LoggerFactory.getLogger(SavingsAccount.class);
 
@@ -1042,9 +1042,10 @@ public class SavingsAccount extends AbstractAuditableWithUTCDateTimeCustom<Long>
                 if (MathUtil.isEmpty(overdraftAmount) && runningBalance.isLessThanZero() && !transaction.isAmountOnHold()) {
                     overdraftAmount = runningBalance.negated();
                 }
-                if (!calculateInterest || transaction.getId() == null) {
+                if (!calculateInterest || transaction.getId() == null || transaction.getOverdraftAmount(this.currency).isZero()) {
                     transaction.setOverdraftAmount(overdraftAmount);
-                } else if (!MathUtil.isEqualTo(overdraftAmount, transaction.getOverdraftAmount(this.currency))) {
+                } else if (!MathUtil.isEqualTo(overdraftAmount, transaction.getOverdraftAmount(this.currency))
+                        && !transaction.isAccrual()) {
                     SavingsAccountTransaction accountTransaction = SavingsAccountTransaction.copyTransaction(transaction);
                     if (transaction.isChargeTransaction()) {
                         Set<SavingsAccountChargePaidBy> chargesPaidBy = transaction.getSavingsAccountChargesPaid();
@@ -1171,6 +1172,7 @@ public class SavingsAccount extends AbstractAuditableWithUTCDateTimeCustom<Long>
         if (backdatedTxnsAllowedTill) {
             addTransactionToExisting(transaction);
         } else {
+            this.accrualsForSavingsReverse(transactionDTO, backdatedTxnsAllowedTill);
             addTransaction(transaction);
         }
 
@@ -1306,6 +1308,7 @@ public class SavingsAccount extends AbstractAuditableWithUTCDateTimeCustom<Long>
         if (backdatedTxnsAllowedTill) {
             addTransactionToExisting(transaction);
         } else {
+            this.accrualsForSavingsReverse(transactionDTO, backdatedTxnsAllowedTill);
             addTransaction(transaction);
         }
 
@@ -3267,10 +3270,6 @@ public class SavingsAccount extends AbstractAuditableWithUTCDateTimeCustom<Long>
         return getActivationDate() == null ? getSubmittedOnDate() : getActivationDate();
     }
 
-    public DepositAccountType depositAccountType() {
-        return DepositAccountType.fromInt(depositType);
-    }
-
     protected boolean isTransferInterestToOtherAccount() {
         return false;
     }
@@ -3822,10 +3821,6 @@ public class SavingsAccount extends AbstractAuditableWithUTCDateTimeCustom<Long>
         return this.minOverdraftForInterestCalculation;
     }
 
-    public Integer getDepositType() {
-        return this.depositType;
-    }
-
     public BigDecimal getMinRequiredBalance() {
         return this.minRequiredBalance;
     }
@@ -3865,10 +3860,31 @@ public class SavingsAccount extends AbstractAuditableWithUTCDateTimeCustom<Long>
                 .toList();
     }
 
+    public void accrualsForSavingsReverse(SavingsAccountTransactionDTO transactionDTO, final boolean backdatedTxnsAllowedTill) {
+        List<SavingsAccountTransaction> accountTransactionsSorted = null;
+
+        if (backdatedTxnsAllowedTill) {
+            accountTransactionsSorted = retrieveSortedTransactions();
+        } else {
+            accountTransactionsSorted = retrieveListOfTransactions();
+        }
+        for (final SavingsAccountTransaction transaction : accountTransactionsSorted) {
+            boolean typeTransaccionValidation = transaction.getTransactionType() == SavingsAccountTransactionType.ACCRUAL;
+            if (typeTransaccionValidation && (transaction.getDateOf().isAfter(transactionDTO.getTransactionDate())
+                    || transaction.getDateOf().isEqual(transactionDTO.getTransactionDate()))) {
+                transaction.reverse();
+            }
+        }
+    }
+
     public List<SavingsAccountTransactionDetailsForPostingPeriod> toSavingsAccountTransactionDetailsForPostingPeriodList() {
         return retreiveOrderedNonInterestPostingTransactions().stream()
                 .map(transaction -> transaction.toSavingsAccountTransactionDetailsForPostingPeriod(this.currency, this.allowOverdraft))
                 .toList();
     }
 
+    @Override
+    public DepositAccountType depositAccountType() {
+        return DepositAccountType.fromInt(100);
+    }
 }

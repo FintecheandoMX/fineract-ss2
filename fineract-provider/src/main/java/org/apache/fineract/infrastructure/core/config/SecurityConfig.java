@@ -43,10 +43,9 @@ import org.apache.fineract.infrastructure.instancemode.filter.FineractInstanceMo
 import org.apache.fineract.infrastructure.jobs.filter.LoanCOBApiFilter;
 import org.apache.fineract.infrastructure.jobs.filter.LoanCOBFilterHelper;
 import org.apache.fineract.infrastructure.security.data.PlatformRequestLog;
-import org.apache.fineract.infrastructure.security.filter.InsecureTwoFactorAuthenticationFilter;
 import org.apache.fineract.infrastructure.security.filter.TenantAwareBasicAuthenticationFilter;
 import org.apache.fineract.infrastructure.security.filter.TwoFactorAuthenticationFilter;
-import org.apache.fineract.infrastructure.security.service.BasicAuthTenantDetailsService;
+import org.apache.fineract.infrastructure.security.service.AuthTenantDetailsService;
 import org.apache.fineract.infrastructure.security.service.TenantAwareJpaPlatformUserDetailsService;
 import org.apache.fineract.infrastructure.security.service.TwoFactorService;
 import org.apache.fineract.notification.service.UserNotificationService;
@@ -103,7 +102,7 @@ public class SecurityConfig {
     @Autowired
     private UserNotificationService userNotificationService;
     @Autowired
-    private BasicAuthTenantDetailsService basicAuthTenantDetailsService;
+    private AuthTenantDetailsService basicAuthTenantDetailsService;
     @Autowired
     private BusinessDateReadPlatformService businessDateReadPlatformService;
     @Autowired
@@ -122,7 +121,9 @@ public class SecurityConfig {
                 .securityMatcher(antMatcher("/api/**")).authorizeHttpRequests((auth) -> {
                     List<AuthorizationManager<RequestAuthorizationContext>> authorizationManagers = new ArrayList<>();
                     authorizationManagers.add(fullyAuthenticated());
-                    authorizationManagers.add(hasAuthority("TWOFACTOR_AUTHENTICATED"));
+                    if (fineractProperties.getSecurity().getTwoFactor().isEnabled()) {
+                        authorizationManagers.add(hasAuthority("TWOFACTOR_AUTHENTICATED"));
+                    }
                     if (fineractProperties.getModule().getSelfService().isEnabled()) {
                         auth.requestMatchers(antMatcher(HttpMethod.POST, "/api/*/self/authentication")).permitAll() //
                                 .requestMatchers(antMatcher(HttpMethod.POST, "/api/*/self/registration")).permitAll() //
@@ -159,8 +160,8 @@ public class SecurityConfig {
                             .requestMatchers(antMatcher("/api/**"))
                             .access(allOf(authorizationManagers.toArray(new AuthorizationManager[0]))); //
                 }).httpBasic((httpBasic) -> httpBasic.authenticationEntryPoint(basicAuthenticationEntryPoint())) //
-                .cors(Customizer.withDefaults()).csrf(AbstractHttpConfigurer::disable) // NOSONAR only creating a
-                                                                                       // service that
+                .csrf(AbstractHttpConfigurer::disable) // NOSONAR only creating a
+                                                       // service that
                 // is used by non-browser clients
                 .sessionManagement((smc) -> smc.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //
                 .addFilterBefore(tenantAwareBasicAuthenticationFilter(), SecurityContextHolderFilter.class) //
@@ -178,8 +179,6 @@ public class SecurityConfig {
         }
         if (fineractProperties.getSecurity().getTwoFactor().isEnabled()) {
             http.addFilterAfter(twoFactorAuthenticationFilter(), CorrelationHeaderFilter.class);
-        } else {
-            http.addFilterAfter(insecureTwoFactorAuthenticationFilter(), CorrelationHeaderFilter.class);
         }
 
         if (serverProperties.getSsl().isEnabled()) {
@@ -189,6 +188,9 @@ public class SecurityConfig {
         if (fineractProperties.getSecurity().getHsts().isEnabled()) {
             http.requiresChannel(channel -> channel.anyRequest().requiresSecure()).headers(
                     headers -> headers.httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000)));
+        }
+        if (fineractProperties.getSecurity().getCors().isEnabled()) {
+            http.cors(Customizer.withDefaults());
         }
         return http.build();
     }
@@ -204,10 +206,6 @@ public class SecurityConfig {
     public TwoFactorAuthenticationFilter twoFactorAuthenticationFilter() {
         TwoFactorService twoFactorService = applicationContext.getBean(TwoFactorService.class);
         return new TwoFactorAuthenticationFilter(twoFactorService);
-    }
-
-    public InsecureTwoFactorAuthenticationFilter insecureTwoFactorAuthenticationFilter() {
-        return new InsecureTwoFactorAuthenticationFilter();
     }
 
     public FineractInstanceModeApiFilter fineractInstanceModeApiFilter() {
@@ -263,13 +261,16 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(List.of("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(List.of("*"));
+        CorsConfiguration config = new CorsConfiguration();
+        FineractProperties.CorsProperties corsConfiguration = fineractProperties.getSecurity().getCors();
+        config.setAllowedOriginPatterns(corsConfiguration.getAllowedOriginPatterns());
+        config.setAllowedMethods(corsConfiguration.getAllowedMethods());
+        config.setAllowedHeaders(corsConfiguration.getAllowedHeaders());
+        config.setExposedHeaders(corsConfiguration.getExposedHeaders());
+        config.setAllowCredentials(corsConfiguration.isAllowCredentials()); // if you use cookies / Authorization header
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 }

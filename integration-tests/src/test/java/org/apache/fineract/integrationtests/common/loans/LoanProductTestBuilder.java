@@ -113,6 +113,7 @@ public class LoanProductTestBuilder {
     private Account feeAndPenaltyAssetAccount;
 
     private Boolean multiDisburseLoan = false;
+    private Boolean allowFullTermForTranche = false;
     private final String outstandingLoanBalance = "35000";
     private String maxTrancheCount = "3";
     private Boolean disallowExpectedDisbursements = false;
@@ -137,8 +138,8 @@ public class LoanProductTestBuilder {
     private String minimumGuaranteeFromOwnFunds = null;
     private String minimumGuaranteeFromGuarantor = null;
     private String isArrearsBasedOnOriginalSchedule = null;
-    private String graceOnPrincipalPayment = "1";
-    private String graceOnInterestPayment = "1";
+    private String graceOnPrincipalPayment = null;
+    private String graceOnInterestPayment = null;
     private JsonObject allowAttributeOverrides = null;
     private Boolean allowPartialPeriodInterestCalcualtion = false;
 
@@ -225,6 +226,7 @@ public class LoanProductTestBuilder {
         }
         if (this.multiDisburseLoan) {
             map.put("multiDisburseLoan", this.multiDisburseLoan);
+            map.put("allowFullTermForTranche", this.allowFullTermForTranche);
             map.put("maxTrancheCount", this.maxTrancheCount);
             map.put("outstandingLoanBalance", this.outstandingLoanBalance);
             map.put("disallowExpectedDisbursements", this.disallowExpectedDisbursements);
@@ -241,6 +243,10 @@ public class LoanProductTestBuilder {
             map.put("multiDisburseLoan", this.multiDisburseLoan);
             map.put("maxTrancheCount", this.maxTrancheCount);
             map.put("outstandingLoanBalance", this.outstandingLoanBalance);
+        }
+        // Always send allowFullTermForTranche when it's true (for validation testing of single-disburse scenarios)
+        if (this.allowFullTermForTranche && !this.multiDisburseLoan) {
+            map.put("allowFullTermForTranche", this.allowFullTermForTranche);
         }
 
         if (this.fullAccountingConfig != null) {
@@ -742,6 +748,11 @@ public class LoanProductTestBuilder {
         return this;
     }
 
+    public LoanProductTestBuilder withAllowFullTermForTranche(boolean allowFullTermForTranche) {
+        this.allowFullTermForTranche = allowFullTermForTranche;
+        return this;
+    }
+
     public LoanProductTestBuilder withFeeToIncomeAccountMapping(final Long chargeId, final Long accountId) {
         if (this.feeToIncomeAccountMappings == null) {
             this.feeToIncomeAccountMappings = new ArrayList<>();
@@ -834,7 +845,7 @@ public class LoanProductTestBuilder {
         }
         Map<String, Long> newMap = new HashMap<>();
         newMap.put("chargeOffReasonCodeValueId", reasonId);
-        newMap.put("expenseGLAccountId", accountId);
+        newMap.put("expenseAccountId", accountId);
         this.chargeOffReasonToExpenseAccountMappings.add(newMap);
         return this;
     }
