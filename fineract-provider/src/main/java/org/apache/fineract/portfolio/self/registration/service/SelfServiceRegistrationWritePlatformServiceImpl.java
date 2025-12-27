@@ -185,7 +185,7 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
         }
         Long providerId = new ArrayList<>(smsProviders).get(0).getId();
         final String message = "Hola  " + selfServiceRegistration.getFirstName() + "," + "\n"
-                + "Para crear un usuario, utilice los siguientes datos \n" + "Id de Petición : " + selfServiceRegistration.getId()
+                + "Para crear un usuario, utilice los siguientes datos \n\n" + "\nId de Petición : " + selfServiceRegistration.getId()
                 + "\n Código de Autorización : " + selfServiceRegistration.getAuthenticationToken();
         String externalId = null;
         Group group = null;
@@ -200,8 +200,8 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
 
     private void sendAuthorizationMail(SelfServiceRegistration selfServiceRegistration) {
         final String subject = "Código de Autorización ";
-        final String body = "Hola  " + selfServiceRegistration.getFirstName() + "," + "\n" + "Para crear un usuario, utilice los siguientes datos\n"
-                + "Id de Petición: " + selfServiceRegistration.getId() + "\n Código de Autorización : "
+        final String body = "Hola  " + selfServiceRegistration.getFirstName() + "," + "\n" + "Para crear un usuario, utilice los siguientes datos\n\n"
+                + "\nId de Petición: " + selfServiceRegistration.getId() + "\nCódigo de Autorización : "
                 + selfServiceRegistration.getAuthenticationToken();
 
         final EmailDetail emailDetail = new EmailDetail(subject, body, selfServiceRegistration.getEmail(),
