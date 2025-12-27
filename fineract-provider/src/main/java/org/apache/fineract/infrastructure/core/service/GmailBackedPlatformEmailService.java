@@ -40,12 +40,12 @@ public class GmailBackedPlatformEmailService implements PlatformEmailService {
     @Override
     public void sendToUserAccount(String organisationName, String contactName, String address, String username, String unencodedPassword) {
 
-        final String subject = "Welcome " + contactName + " to " + organisationName;
-        final String body = "You are receiving this email as your email account: " + address
-                + " has being used to create a user account for an organisation named [" + organisationName + "] on Mifos.\n"
-                + "You can login using the following credentials:\nusername: " + username + "\n" + "password: " + unencodedPassword + "\n"
-                + "You must change this password upon first log in using Uppercase, Lowercase, number and character.\n"
-                + "Thank you and welcome to the organisation.";
+        final String subject = "Te damos la bienvenida " + contactName + " a la aplicación móvil de la Financiera para el Bienestar®";
+        final String body = "Estás recibiendo este correo electrónico ya que esta dirección : " + address
+                + " se ha utilizado para crear una cuenta de usuario para la aplicación móvil de la Financiera para el Bienestar®.\n"
+                + "\nPuede iniciar sesión utilizando las siguientes credenciales:\n\nUsuario: " + username + "\n" + "Contraseña: " + unencodedPassword + "\n"
+                + "\n\nDebe cambiar esta contraseña la primera vez que inicie sesión utilizando mayúsculas, minúsculas, números y caracteres.\n"
+                + "\n\n!Gracias¡.";
 
         final EmailDetail emailDetail = new EmailDetail(subject, body, address, contactName);
         sendDefinedEmail(emailDetail);
