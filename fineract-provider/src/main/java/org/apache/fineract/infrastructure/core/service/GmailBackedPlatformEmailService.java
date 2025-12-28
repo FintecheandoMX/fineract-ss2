@@ -40,7 +40,7 @@ public class GmailBackedPlatformEmailService implements PlatformEmailService {
     @Override
     public void sendToUserAccount(String organisationName, String contactName, String address, String username, String unencodedPassword) {
 
-        final String subject = "Te damos la bienvenida " + contactName + " a la aplicación móvil de la Financiera para el Bienestar®";
+        final String subject = contactName + " te damos la bienvenida a la aplicación móvil de la Financiera para el Bienestar®";
         final String body = "Estás recibiendo este correo electrónico ya que esta dirección : " + address
                 + " se ha utilizado para crear una cuenta de usuario para la aplicación móvil de la Financiera para el Bienestar®.\n"
                 + "\nPuede iniciar sesión utilizando las siguientes credenciales:\n\nUsuario: " + username + "\n" + "Contraseña: " + unencodedPassword + "\n"

@@ -184,8 +184,8 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
                     "Mobile service provider not available.");
         }
         Long providerId = new ArrayList<>(smsProviders).get(0).getId();
-        final String message = "Hola  " + selfServiceRegistration.getFirstName() + "," + "\n"
-                + "Para crear un usuario, utilice los siguientes datos \n\n" + "\nId de Petición : " + selfServiceRegistration.getId()
+        final String message = "Hola  " + selfServiceRegistration.getFirstName() + "," + "\n\n"
+                + "Para crear un usuario, utilice los siguientes datos \n" + "\nId de Petición : " + selfServiceRegistration.getId()
                 + "\n Código de Autorización : " + selfServiceRegistration.getAuthenticationToken();
         String externalId = null;
         Group group = null;
