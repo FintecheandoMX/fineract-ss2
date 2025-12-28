@@ -113,7 +113,7 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
                 .notExceedingLengthOf(100);
         
         String middleName = this.fromApiJsonHelper.extractStringNamed(SelfServiceApiConstants.middleNameParamName, element);
-        baseDataValidator.reset().parameter(SelfServiceApiConstants.middleNameParamName).value(middleName).notBlank()
+        baseDataValidator.reset().parameter(SelfServiceApiConstants.middleNameParamName).value(middleName).ignoreIfNull()
                 .notExceedingLengthOf(100);
 
         String lastName = this.fromApiJsonHelper.extractStringNamed(SelfServiceApiConstants.lastNameParamName, element);
