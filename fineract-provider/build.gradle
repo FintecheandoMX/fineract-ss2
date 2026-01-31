@@ -243,7 +243,7 @@ bootJar {
 
 jib {
     from {
-        image = 'azul/zulu-openjdk-alpine:21'
+        image = 'harbor.flexcore.mx/fintechsys/com.ye.fintecheando.jdk.zulu21.main'
         platforms {
             platform {
                 architecture = System.getProperty("os.arch").equals("aarch64")?"arm64":"amd64"
